@@ -20,7 +20,11 @@ sudoku = [
     [0, 4, 0, 0, 5, 0, 0, 3, 6],
     [7, 0, 3, 0, 1, 8, 0, 0, 0]
 ]
-
+# sudoku = [
+#     [0, 2, 3, 4, 0],
+#     [4, 0, 2, 3, 0],
+#
+# ]
 """
 Needed:
 Recursion/Backtracking
@@ -34,21 +38,20 @@ row is the current row of sudoku that is being checked
 """
 
 
-def parse_sudoku_row(row, index=0, num_to_check=1):
-    # Use this to check if the number that was entered is in the row
-    # If it is, call the function again with the same index and num_to_check+1
-    if num_to_check == 10 or index == 9:
+def parse_sudoku_row(sudoku, row=0, index=0, num_to_check=1):
+    if row == len(sudoku):
         return
-    if row[index] != 0:
-        parse_sudoku_row(row, index + 1)
+    if index == len(sudoku[row]):
+        parse_sudoku_row(sudoku, row+1)
         return
-    if num_to_check in row and row[index] == 0:
-        parse_sudoku_row(row, index, num_to_check + 1)
+    if sudoku[row][index] != 0:
+        parse_sudoku_row(sudoku, row, index + 1)
+        return
+    if num_to_check in sudoku[row] and sudoku[row][index] == 0:
+        parse_sudoku_row(sudoku, row, index, num_to_check + 1)
     else:
-        row[index] = num_to_check
-        parse_sudoku_row(row, index + 1)
-
-
+        sudoku[row][index] = num_to_check
+        parse_sudoku_row(sudoku, row, index + 1)
 
     # if is_number not in row and row[index] == 0:
     # possible_nums = range(1, 10)
@@ -61,13 +64,14 @@ def parse_sudoku_row(row, index=0, num_to_check=1):
     #         parse_sudoku_row(row)
     # print(row)
 
-
-
+parse_sudoku_row(sudoku)
 for row in sudoku:
-    starting_row = row.copy()
-    parse_sudoku_row(row)
-    print(f'''BEGINNING ROW:      {starting_row}
-    FINAL ROW:      {row}\n''')
+    print(row)
+# for row in sudoku:
+#     starting_row = row.copy()
+#     parse_sudoku_row(row)
+#     print(f'''BEGINNING ROW:      {starting_row}
+#     FINAL ROW:      {row}\n''')
 
     # for num in sudoku[0]:
 #     print(f"the number in the sudoku row is {num}")
