@@ -99,7 +99,6 @@ def row_checker(sudoku_copy, stop_at_row):
     return
 
 
-def check_all_rows_against_one():
 
 
 
