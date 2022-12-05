@@ -23,8 +23,8 @@ import copy
 # ]
 sudoku = [
     [0, 3, 4, 5, 0],
-    [0, 2, 3, 4, 0],
-    # [0, 5, 2, 3, 4],
+    [0, 2, 3, 4, 5],
+    [0, 5, 2, 3, 4],
 ]
 
 # sudoku =[
@@ -49,10 +49,13 @@ def parse_sudoku_row(sudoku_copy, row=0, index=0, num_to_insert=1):
     if row == len(sudoku_copy):
         return
     # if the index is equal to the length of the row, the end of the row has been reached...
+    print(f'index: {index}')
     if index == len(sudoku_copy[row]):
+        print(f'len(sudoku_copy[row]: {len(sudoku_copy[row])}')
         # Check each row for duplicates at the same index position
-        # if row_holder(sudoku, row + 1):
-            # parse_sudoku_row(sudoku, row, index, num_to_insert + 1)
+        if row_checker(sudoku_copy, row + 1):
+            sudoku_copy[row] = sudoku[row]
+            parse_sudoku_row(sudoku_copy, row, 0, num_to_insert + 1)
         #Move to the next row
         parse_sudoku_row(sudoku_copy, row + 1)
         return
@@ -66,15 +69,15 @@ def parse_sudoku_row(sudoku_copy, row=0, index=0, num_to_insert=1):
         parse_sudoku_row(sudoku_copy, row, index + 1)
 
 
-def row_holder(sudoku_copy, stop_at_row):
+def row_checker(sudoku_copy, stop_at_row):
     # If only one row was passed, return as there is nothing to check
     if stop_at_row == 1:
-        return
+        return False
     # In the range of 1 to the number of rows passed, iterate through the rows
     for row in range(1, stop_at_row):
         #go through each element in each row and compare them to each other
         for index in range(0, len(sudoku_copy[row])):
-            #If they are equal, return true
+            #If any element is equal in each list, return true
             if sudoku_copy[row - 1][index] == sudoku_copy[row][index]:
                 print("yes")
                 print(f'''sudoku[{row - 1}]: {sudoku_copy[row - 1]} 
@@ -90,7 +93,7 @@ sudoku_copy = copy.deepcopy(sudoku)
 parse_sudoku_row(sudoku_copy)
 # print(sudoku)
 
-for row in sudoku:
+for row in sudoku_copy:
     print(f'''{row}''')
 # if is_number not in row and row[index] == 0:
 # possible_nums = range(1, 10)
