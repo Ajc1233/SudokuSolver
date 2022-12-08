@@ -17,17 +17,19 @@ import copy
 #     [1, 9, 0, 0, 0, 4, 5, 0, 0],
 #     [8, 2, 0, 1, 0, 0, 0, 4, 0],
 #     [0, 0, 4, 6, 0, 2, 9, 0, 0],
-#     [0, 5, 0, 0, 0, 3, 0, 2, 8],
-#     [0, 0, 9, 3, 0, 0, 0, 7, 4],
-#     [0, 4, 0, 0, 5, 0, 0, 3, 6],
-#     [7, 0, 3, 0, 1, 8, 0, 0, 0]
+#     # [0, 5, 0, 0, 0, 3, 0, 2, 8],
+#     # [0, 0, 9, 3, 0, 0, 0, 7, 4],
+#     # [0, 4, 0, 0, 5, 0, 0, 3, 6],
+#     # [7, 0, 3, 0, 1, 8, 0, 0, 0]
 # ]
 sudoku = [
     [0, 0, 0, 0, 0],
     [0, 0, 0, 0, 0],
     [0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0],
     # [0, 5, 2, 3, 4],
 ]
+
 
 # sudoku =[
 #     [0, 3, 5, 2, 0, 9, 7, 8, 1],
@@ -137,36 +139,41 @@ def sudoku_row_algo(row_to_change, num_to_check, index, pass_thru=1):
         return True
 
 
-def sudoku_algo_fill(_sudoku, row, index=0, num_to_insert=1, base_case=[6]):
+def sudoku_algo_fill(_sudoku, row, index=0, num_to_insert=1, base_case=len(sudoku[0])+1, nums_tried=[]):
 
-    if index == 5:
+    if index == len(_sudoku[0]):
         sudoku_algo_fill(_sudoku, row + 1)
         return
-
     if row == len(_sudoku):
         return
-    if num_to_insert == sorted(base_case)[0]:
-        check_rows_above(_sudoku, row, index, num_to_insert, base_case)
-
+    if num_to_insert == base_case:
+        check_rows_above(_sudoku, row, index, num_to_insert, base_case, nums_tried)
+        return
+    if num_to_insert in nums_tried:
+        sudoku_algo_fill(_sudoku, row, index, num_to_insert + 1 if num_to_insert !=5 else 1, base_case,nums_tried)
+        return
 
     if _sudoku[row][index] == 0 and num_to_insert not in _sudoku[row]:
         _sudoku[row][index] = num_to_insert
-        if row > 0 and check_rows_above(_sudoku, row, index, num_to_insert, base_case):
+        if row > 0 and check_rows_above(_sudoku, row, index, num_to_insert, base_case, nums_tried):
             _sudoku[row][index] = 0
-            sudoku_algo_fill(_sudoku, row, index, 1 if num_to_insert + 1 == 6 else num_to_insert + 1, [num_to_insert])
+            sudoku_algo_fill(_sudoku, row, index, 1 if num_to_insert + 1 == len(_sudoku[0])+1 else num_to_insert + 1, num_to_insert, nums_tried)
             return
         else:
-            sudoku_algo_fill(_sudoku, row, index + 1)
+            # nums_tried = []
+            sudoku_algo_fill(_sudoku, row, index + 1, base_case=len(sudoku[0])+1, nums_tried=[])
         return
     elif _sudoku[row][index] == 0:
-        sudoku_algo_fill(_sudoku, row, index, num_to_insert + 1, base_case)
+        sudoku_algo_fill(_sudoku, row, index, num_to_insert + 1, base_case, nums_tried)
         return
     else:
         sudoku_algo_fill(_sudoku, row, index + 1)
         return
 
 
-def check_rows_above(_sudoku, row, index, num_to_insert, orig_base_case):
+def check_rows_above(_sudoku, row, index, num_to_insert, orig_base_case, nums_tried=[]):
+    if row == 8:
+        print()
     # check all available rows to the row above it
     current_row_to_check = _sudoku[row]
     while row > 0:
@@ -176,13 +183,24 @@ def check_rows_above(_sudoku, row, index, num_to_insert, orig_base_case):
             _sudoku[row][index - 1] = current_row_to_check[index] = 0
             while True:
                 if current_row_to_check[index] == 0:
-                    orig_base_case.append(prev_index)
-                    sudoku_algo_fill(_sudoku, row, index - 1, prev_index + 1, orig_base_case)
+                    try:
+                        nums_tried.append(prev_index)
+                    except UnboundLocalError:
+                        nums_tried = [prev_index]
+                    if index-1 > 0:
+                        sudoku_algo_fill(_sudoku, row, index - 1, prev_index + 1 if prev_index != 5 else 1, prev_index, nums_tried)
+                    else:
+                        sudoku_algo_fill(_sudoku, row-1, len(_sudoku[row]), prev_index + 1 if prev_index != 5 else 1, prev_index,
+                                         nums_tried)
                 # then try to fill the prev index first
                 else:
-                    sudoku_algo_fill(_sudoku, row, index - 1, prev_index + 1, [prev_index - 1] if prev_index == 5 else [prev_index])
-                if prev_index != current_row_to_check[index]:
+                    # nums_tried = []
+                    # if row ==3:
                     break
+                    # print("h")
+                    sudoku_algo_fill(_sudoku, row, index - 1, prev_index + 1, prev_index + 1 if prev_index == 5 else [prev_index])
+
+
 
         if current_row_to_check[index] == _sudoku[row - 1][index]:
             return True
