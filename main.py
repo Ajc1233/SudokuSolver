@@ -11,16 +11,40 @@ import copy
 #     [2, 4, 8, 9, 5, 7, 1, 3, 6],
 #     [7, 6, 3, 4, 1, 8, 2, 5, 9]
 # ]
+# sudoku = [
+#     [0, 0, 0, 2, 6, 0, 7, 0, 1],
+#     [6, 8, 0, 0, 7, 0, 0, 9, 0],
+#     [1, 9, 0, 0, 0, 4, 5, 0, 0],
+#     [8, 2, 0, 1, 0, 0, 0, 4, 0],
+#     [0, 0, 4, 6, 0, 2, 9, 0, 0],
+#     [0, 5, 0, 0, 0, 3, 0, 2, 8],
+#     [0, 0, 9, 3, 0, 0, 0, 7, 4],
+#     [0, 4, 0, 0, 5, 0, 0, 3, 6],
+#     [7, 0, 3, 0, 1, 8, 0, 0, 0]
+#
+# ]
+sudoku_answer = [
+    [8, 3, 9, 6, 7, 5, 1, 2, 4],
+    [5, 1, 2, 9, 8, 4, 7, 3, 6],
+    [4, 7, 6, 1, 3, 2, 8, 5, 9],
+    [6, 9, 4, 3, 1, 7, 5, 8, 2],
+    [1, 8, 5, 2, 9, 6, 3, 4, 7],
+    [3, 2, 7, 5, 4, 8, 6, 9, 1],
+    [9, 5, 8, 7, 2, 1, 4, 6, 3],
+    [2, 6, 1, 4, 5, 3, 9, 7, 8],
+    [7, 4, 3, 8, 6, 9, 2, 1, 5]
+]
 sudoku = [
-    [0, 0, 0, 2, 6, 0, 7, 0, 1],
-    [6, 8, 0, 0, 7, 0, 0, 9, 0],
-    [1, 9, 0, 0, 0, 4, 5, 0, 0],
-    [8, 2, 0, 1, 0, 0, 0, 4, 0],
-    [0, 0, 4, 6, 0, 2, 9, 0, 0],
-    [0, 5, 0, 0, 0, 3, 0, 2, 8],
-    [0, 0, 9, 3, 0, 0, 0, 7, 4],
-    [0, 4, 0, 0, 5, 0, 0, 3, 6],
-    [7, 0, 3, 0, 1, 8, 0, 0, 0]
+    [0, 3, 0, 6, 0, 0, 0, 0, 0],
+    [5, 0, 0, 0, 0, 4, 0, 0, 0],
+    [0, 7, 6, 0, 3, 0, 0, 5, 9],
+    [0, 0, 0, 3, 0, 0, 5, 0, 0],
+    [1, 8, 0, 0, 0, 0, 0, 4, 7],
+    [0, 0, 7, 0, 0, 8, 0, 0, 0],
+    [9, 5, 0, 0, 2, 0, 4, 6, 0],
+    [0, 0, 0, 4, 0, 0, 0, 0, 8],
+    [0, 0, 0, 0, 0, 9, 0, 1, 0]
+
 ]
 # sudoku = [
 #     [0, 0, 0, 0, 0],
@@ -287,23 +311,86 @@ def column_numbers(_sudoku, row, index):
     return column_nums
 
 
+
+def row_grid_start(row):
+    if row % 3 == 2:
+        return row - 2
+    if row % 3 == 1:
+        return row - 1
+    return row
+
+
+def index_grid_start(index):
+    if index % 3 == 2:
+        return index - 2
+    if index % 3 == 1:
+        return index - 1
+    return index
+
+
+
+def find_grid(_sudoku, row, index):
+    grid_nums = []
+    row = row_grid_start(row)
+    index = index_grid_start(index)
+
+    orig_index = index
+    row_counter = 0
+
+
+    while row_counter < 3:
+        index = orig_index
+        index_counter = 0
+        while index_counter < 3:
+            grid_nums.append(_sudoku[row][index])
+            index += 1
+            index_counter += 1
+        row += 1
+        row_counter += 1
+    return grid_nums
+
+
+# def column_numbers(_sudoku, row, index):
+#     row_counter = 0
+#     column_nums = []
+#     while row_counter <= row - 1:
+#         if row == row_counter:
+#             row_counter += 1
+#             continue
+#         column_nums.append(_sudoku[row_counter][index])
+#         row_counter += 1
+#
+#
+#     return column_nums
+
+
+def element_permanent(row, index):
+    if sudoku[row][index] == 0:
+        return False
+    return True
+
+
 def try_again(_sudoku, row, index=0, add_num=0):
     curr_row = _sudoku[row]
 
     if index == len(_sudoku[row]):
         return True
 
-    if sudoku[row][index] != 0:
-        return try_again(_sudoku, row, index+1, add_num)
 
+    if element_permanent(row, index):
+        return try_again(_sudoku, row, index + 1)
+
+
+    three_by_three = find_grid(_sudoku, row, index)
+    column_row = column_numbers(_sudoku, row, index)
+    column_row.append(add_num)
     add_num = 1 if add_num + 1 > len(_sudoku[row]) else add_num + 1
     count = 0
-    column_row = column_numbers(_sudoku, row, index)
 
     while True:
 
-        # if the number that will be added to the list is not in one of these list and is  equal to 0, run this statement
-        while (add_num in curr_row or add_num in column_row) and count < len(_sudoku[row]):  # and curr_row[index] == 0:
+        #if the number that will be added to the list is not in one of these list and is  equal to 0, run this statement
+        while (add_num in curr_row or add_num in column_row or add_num in three_by_three) and count < len(_sudoku[row]):
             add_num = 1 if add_num + 1 > len(_sudoku[row]) else add_num + 1
             count += 1
         if count < len(_sudoku[row]):
@@ -315,8 +402,99 @@ def try_again(_sudoku, row, index=0, add_num=0):
                 add_num = 1 if add_num + 1 > len(_sudoku[row]) else add_num + 1
         else:
             if index == 0:
-                print("J")
+                # _sudoku[row-1][8] = 0
+                ##Need to find a way to call the try_again function if the previous row gets completed
+
+                if call_prev_row(_sudoku, row - 1):
+                    return try_again(_sudoku, row, 0)
+                # if call_prev_row(_sudoku, row - 1):
+                    # print("J")
+                    # try_again(_sudoku, row, 0)
+
             return False
+
+
+    return True
+
+
+def try_again_from_prev_row(_sudoku, row, index=0, add_num=0):
+    curr_row = _sudoku[row]
+
+    if index == len(_sudoku[row]):
+        return True
+
+
+    if element_permanent(row, index):
+        return try_again_from_prev_row(_sudoku, row, index + 1)
+
+    three_by_three = find_grid(_sudoku, row, index)
+    column_row = column_numbers(_sudoku, row, index)
+    column_row.append(add_num)
+    add_num = 1 if add_num + 1 > len(_sudoku[row]) else add_num + 1
+    count = 0
+
+
+    while True:
+
+        #if the number that will be added to the list is not in one of these list and is  equal to 0, run this statement
+        while (add_num in curr_row or add_num in column_row or add_num in three_by_three) and count < len(_sudoku[row]):
+            add_num = 1 if add_num + 1 > len(_sudoku[row]) else add_num + 1
+            count += 1
+        if count < len(_sudoku[row]):
+            curr_row[index] = add_num
+            if try_again_from_prev_row(_sudoku, row, index + 1):
+                break
+            else:
+                curr_row[index] = 0
+                add_num = 1 if add_num + 1 > len(_sudoku[row]) else add_num + 1
+        else:
+            if index == 0:
+                return False
+            return False
+
+
+    return True
+
+
+
+
+def call_prev_row(_sudoku, row, index=8, count=0):
+    #use this if statement to reset rows that have been tried before
+    # if reset_rows >0:
+    #     _sudoku[row - reset_rows] = sudoku[row]
+    #     call_prev_row(_sudoku, row - 1, 8, 0, reset_rows-1)
+    #     return
+
+    while True:
+        if element_permanent(row, index):
+            # call_prev_row(_sudoku, row, index-1)
+            index -= 1
+            if index == -1:
+                return call_prev_row(_sudoku, row - 1)
+        else:
+            bad_num = _sudoku[row][index]
+            _sudoku[row][index] = 0
+            count += 1
+            if count == 2:
+                break
+            index -= 1
+
+    x = try_again(_sudoku, row, index, bad_num)
+    if not x:
+        y = call_prev_row(_sudoku, row, index-1, 1)
+        return y
+    else:
+        if not try_again_from_prev_row(_sudoku, row+1):
+            _sudoku[row] = copy.deepcopy(sudoku[row])
+            return call_prev_row(_sudoku, row - 1) #put return here
+            # print("POK")
+        # else:
+        #     try_again(_sudoku, row+1)
+    return x
+
+
+
+
 
         # if add_num == 0:
         #     print()
@@ -344,8 +522,6 @@ def try_again(_sudoku, row, index=0, add_num=0):
         #             try_again(_sudoku, row, 0, len(_sudoku[row]))
         #         else:
         #             return False
-    return True
-
 
 
 # def try_again(_sudoku, row, index=0, add_num=0):
@@ -397,28 +573,36 @@ def try_again(_sudoku, row, index=0, add_num=0):
 #     return
 
 
-su1 = [
-    # [1, 2, 3, 4, 5],
-    # [2, 4, 1, 5, 3],
-    # [3, 5, 4, 1, 2],
-    # [0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0],
-    #     # [1, 2, 3, 4, 5],
-    #     # [1, 2, 3, 4, 4],
-    #     # [1, 2, 3, 4, 1],
-    #     # [2, 1, 4, 5, 3],
-    #     # [3, 4, 5, 1, 2],
-    #     # [4, 5, 2, 3, 2],
-]
 
 sudoku_c = copy.deepcopy(sudoku)
 
 for _row in range(0, len(sudoku_c)):
     try_again(sudoku_c, _row)
     print(sudoku_c[_row])
+
+for _row in range(0, len(sudoku_c)):
+    print(sudoku_c[_row] == sudoku_answer[_row])
+
+
+#
+# su1 = [
+#     # [1, 2, 3, 4, 5],
+#     # [2, 4, 1, 5, 3],
+#     # [3, 5, 4, 1, 2],
+#     # [0, 0, 0, 0, 0],
+#     [0, 0, 0, 0, 0],
+#     [0, 0, 0, 0, 0],
+#     [0, 0, 0, 0, 0],
+#     [0, 0, 0, 0, 0],
+#     [0, 0, 0, 0, 0],
+#     [0, 0, 0, 0, 0],
+#     #     # [1, 2, 3, 4, 5],
+#     #     # [1, 2, 3, 4, 4],
+#     #     # [1, 2, 3, 4, 1],
+#     #     # [2, 1, 4, 5, 3],
+#     #     # [3, 4, 5, 1, 2],
+#     #     # [4, 5, 2, 3, 2],
+# ]
 
 # for row in su:
 #     print(row)
