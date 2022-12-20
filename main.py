@@ -313,19 +313,24 @@ def column_numbers(_sudoku, row, index):
 
 
 def row_grid_start(row):
-    if row % 3 == 2:
-        return row - 2
-    if row % 3 == 1:
-        return row - 1
-    return row
-
+    try:
+        if row % 3 == 2:
+            return row - 2
+        if row % 3 == 1:
+            return row - 1
+        return row
+    except RecursionError:
+        print(sudoku_c)
 
 def index_grid_start(index):
-    if index % 3 == 2:
-        return index - 2
-    if index % 3 == 1:
-        return index - 1
-    return index
+    try:
+        if index % 3 == 2:
+            return index - 2
+        if index % 3 == 1:
+            return index - 1
+        return index
+    except RecursionError:
+        print("h")
 
 
 
@@ -405,8 +410,12 @@ def try_again(_sudoku, row, index=0, add_num=0):
                 # _sudoku[row-1][8] = 0
                 ##Need to find a way to call the try_again function if the previous row gets completed
 
-                if call_prev_row(_sudoku, row - 1):
-                    return try_again(_sudoku, row, 0)
+                x = call_prev_row(_sudoku, row - 1, row)
+                if x:
+                    if not 0 in curr_row:
+                        return x
+                    else:
+                        return try_again(_sudoku, row, 0)
                 # if call_prev_row(_sudoku, row - 1):
                     # print("J")
                     # try_again(_sudoku, row, 0)
@@ -418,6 +427,8 @@ def try_again(_sudoku, row, index=0, add_num=0):
 
 
 def try_again_from_prev_row(_sudoku, row, index=0, add_num=0):
+    if row == 9:
+        return
     curr_row = _sudoku[row]
 
     if index == len(_sudoku[row]):
@@ -448,18 +459,80 @@ def try_again_from_prev_row(_sudoku, row, index=0, add_num=0):
                 curr_row[index] = 0
                 add_num = 1 if add_num + 1 > len(_sudoku[row]) else add_num + 1
         else:
-            if index == 0:
-                return False
+            curr_row[index] = 0
             return False
-
-
+            # if index == 0:
+            #     return False
     return True
 
 
+def copy_rows(_sudoku, orig_row):
+    for row in range(0, len(_sudoku)):
+        if _sudoku[row] != orig_row[row]:
+            _sudoku[row] = orig_row[row]
 
 
-def call_prev_row(_sudoku, row, index=8, count=0):
-    #use this if statement to reset rows that have been tried before
+def call_prev_row(_sudoku, row, original_row, index=8, count=0):
+    row_count = 1
+    x = False
+    while not x:
+        # make copy of the current row in case it needs to be reset
+        while True:
+            if element_permanent(row, index):
+                index -= 1
+                if index <= -1:  # means combo cannot be found
+                    if call_prev_row(_sudoku, row - 1, original_row):  # check the previous row
+                        # print(f"if call orig: {id(orig_row)}")
+                        # print(f"if call sudoku: {id(_sudoku)}")
+                        return True
+            else:
+                bad_num = _sudoku[row][index]
+                _sudoku[row][index] = 0
+                count += 1
+                if count == 2:
+                    break
+                index -= 1
+
+        # print(f"sud1oku: {id(_sudoku)}")
+        orig_row = copy.deepcopy(_sudoku)
+        # print(f"orig: {id(orig_row)}")
+        # print(f"sudoku: {id(_sudoku)}")
+        x = try_again_from_prev_row(_sudoku, row, index, bad_num)
+        if not x:
+            count -= 1
+            index -= 1
+        else:
+            '''
+            Change the original row count to +1 so that the calling row can b e checked too'''
+            while row_count < original_row+1:
+                if try_again_from_prev_row(_sudoku, row + row_count):
+                    row_count += 1
+                else:
+                    # print(f"Inside Before assignment orig: {id(orig_row)}")
+                    # print(f"Inside Before assignment sudoku: {id(_sudoku)}")
+                    copy_rows(_sudoku, orig_row)
+                    # print(f"Inside after assignment orig: {id(orig_row)}")
+                    # print(f"Inside after assignment sudoku: {id(_sudoku)}")
+
+                    count -= 1
+                    index -= 1
+                    x = False
+                    break
+    return True
+    # if not x:
+    #     y = call_prev_row(_sudoku, row, index-1, 1)
+    #     return y
+
+
+    # if not try_again_from_prev_row(_sudoku, row+1):
+    #     _sudoku[row] = copy.deepcopy(sudoku[row])
+    #     return call_prev_row(_sudoku, row - 1)
+    #     # print("POK")
+    #
+    # return x
+
+def call_prev_row_2point0(_sudoku, row, index=8, count=0):
+    # use this if statement to reset rows that have been tried before
     # if reset_rows >0:
     #     _sudoku[row - reset_rows] = sudoku[row]
     #     call_prev_row(_sudoku, row - 1, 8, 0, reset_rows-1)
@@ -467,7 +540,6 @@ def call_prev_row(_sudoku, row, index=8, count=0):
 
     while True:
         if element_permanent(row, index):
-            # call_prev_row(_sudoku, row, index-1)
             index -= 1
             if index == -1:
                 return call_prev_row(_sudoku, row - 1)
@@ -481,18 +553,15 @@ def call_prev_row(_sudoku, row, index=8, count=0):
 
     x = try_again(_sudoku, row, index, bad_num)
     if not x:
-        y = call_prev_row(_sudoku, row, index-1, 1)
+        y = call_prev_row(_sudoku, row, index - 1, 1)
         return y
     else:
-        if not try_again_from_prev_row(_sudoku, row+1):
+        if not try_again_from_prev_row(_sudoku, row + 1):
             _sudoku[row] = copy.deepcopy(sudoku[row])
-            return call_prev_row(_sudoku, row - 1) #put return here
+            return call_prev_row(_sudoku, row - 1)  # put return here
             # print("POK")
-        # else:
-        #     try_again(_sudoku, row+1)
+
     return x
-
-
 
 
 
@@ -580,8 +649,13 @@ for _row in range(0, len(sudoku_c)):
     try_again(sudoku_c, _row)
     print(sudoku_c[_row])
 
+print('\n\n')
 for _row in range(0, len(sudoku_c)):
-    print(sudoku_c[_row] == sudoku_answer[_row])
+    print(sudoku_c[_row])
+
+
+# for _row in range(0, len(sudoku_c)):
+#     print(sudoku_c[_row] == sudoku_answer[_row])
 
 
 #
